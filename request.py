@@ -43,6 +43,7 @@ def make_download_request(query, path, quality, mediatype, overwrite):
         try:
             print('Downloading...')
             ydl.download([url])
-            print("Done!")
         except Exception as e:
-            print(f"Error: {e}")
+            print(f"\033[91mError: {e}\033[0m")
+        else:
+            print("\033[92mDone!\033[0m")

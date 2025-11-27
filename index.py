@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 from request import make_download_request
 
 
@@ -31,7 +32,7 @@ always_overwrite_similar_files = data.get('always_overwrite_similar_files')
 
 if not default_download_path or not download_quality or not default_media_type or always_overwrite_similar_files == None:
     print('\n--- Settings Setup ---')
-    decision = input("Some settings have not been assigned values. Do you want to use our default values(y) or set your own(n)? y/n ")
+    decision = input("\033[96mSome settings have not been assigned values. Do you want to use our default values(y) or set your own(n)? y/n\033[0m ")
     
     if decision.lower() != 'n':
         default_download_path = './downloads'
@@ -86,26 +87,92 @@ if not default_download_path or not download_quality or not default_media_type o
         with open('settings.json', 'w') as file:
             json.dump(data, file, indent=4)
 
-
-print("""\n
+yellow = '\033[93m'
+blue = '\033[94m'
+reset = '\033[0m'
+print(f"""\n\033[91m
 ─────╔╗───────── ───────╔═╗╔╗─── ─╔╗──────────────────────╔╗──────
 ╔═╦═╗╠╣╔═╗╔═╗╔╦╗ ╔══╗╔╦╗║═╣╠╣╔═╗ ╔╝║╔═╗╔╦╦╗╔═╦╗╔╗─╔═╗╔═╗─╔╝║╔═╗╔╦╗
 ╚╗║╔╝║║║╬║║╩╣║╔╝ ║║║║║║║╠═║║║║═╣ ║╬║║╬║║║║║║║║║║╚╗║╬║║╬╚╗║╬║║╩╣║╔╝
 ─╚═╝─╚╝║╔╝╚═╝╚╝─ ╚╩╩╝╚═╝╚═╝╚╝╚═╝ ╚═╝╚═╝╚══╝╚╩═╝╚═╝╚═╝╚══╝╚═╝╚═╝╚╝─
 ───────╚╝─────── ─────────────── ─────────────────────────────────
+\033[0m""")
+print(f"""
+Commands:
       
-by Áà Män シ
-Type '/exit' to exit\n\n
-""")
+      \033[93m/exit\033[0m                         -   kill program.
+      \033[93m/path\033[0m        \033[96m<directory>\033[0m      -   specify directory.
+      \033[93m/quality\033[0m     \033[96m<1~3>\033[0m            -   specify quality.
+      \033[93m/media\033[0m       \033[96m<audio/video>\033[0m    -   specify media type.
+      \033[93m/overwrite\033[0m   \033[96m<true/false>\033[0m     -   overwrite.
 
+""")
 os.makedirs(default_download_path, exist_ok=True)
 
 def start_download():
-    song = input('What song do you want to download? ')
-    if song == '/exit':
-        return
-    
-    make_download_request(song.lower(), default_download_path, download_quality, default_media_type, always_overwrite_similar_files)
+    song0 = input('What song do you want to download? ')
+    song = song0.lower()
+    if not song:
+        print('\n\033[91mPlease enter a valid query!\033[0m')
+        start_download()
+    if song.startswith('/'):
+        global always_overwrite_similar_files, default_download_path, default_media_type, download_quality
+        if song == '/exit':
+            exit()
+        elif song.startswith('/path'):
+            os.makedirs(song0.replace('/path','').strip(), exist_ok=True)
+            try:
+                for filename in os.listdir(default_download_path):
+                    new_path = os.path.join(default_download_path, filename)
+                    if os.path.isfile(new_path):
+                        shutil.move(new_path, song0.replace('/path','').strip())
+                os.rmdir(default_download_path)
+                default_download_path = song0.replace('/path','').strip()
+            except Exception as e:
+                print(f"\n\033[91mAn Error Occurred: {e}\033[0m")
+            else:
+                print('\n\033[92mUpdated Successfully!\033[0m')
+        elif song.startswith('/quality'):
+            try:
+                if int(song.replace('/quality','')) > 3 or int(song.replace('/quality','')) < 1:
+                    print('\n\033[91mOut of range!\033[0m')
+                else:
+                    download_quality = int(song.replace('/quality',''))
+                    print('\n\033[92mUpdated Successfully!\033[0m')
+            except ValueError:
+                print('\n\033[91mInvalid value!\033[0m')
+        elif song.startswith('/media'):
+            if song.replace('/media','').strip() == 'a' or song.replace('/media','').strip() == 'audio':
+                default_media_type = 'audio'
+                print('\n\033[92mUpdated Successfully!\033[0m')
+            elif song.replace('/media','').strip() == 'v' or song.replace('/media','').strip() == 'video':
+                default_media_type = 'video'
+                print('\n\033[92mUpdated Successfully!\033[0m')
+            else:
+                print('\n\033[91mInvalid media type!\033[0m')
+        elif song.startswith('/overwrite'):
+            if song.replace('/overwrite','').strip() == 'y' or song.replace('/overwrite','').strip() == 'true':
+                always_overwrite_similar_files = True
+                print('\n\033[92mUpdated Successfully!\033[0m')
+            elif song.replace('/overwrite','').strip() == 'n' or song.replace('/overwrite','').strip() == 'false':
+                always_overwrite_similar_files = False
+                print('\n\033[92mUpdated Successfully!\033[0m')
+            else:
+                print('\n\033[91mInvalid value!\033[0m')
+        else:
+            print('\n\033[91mInvalid command!\033[0m')
+            
+        data = {
+            "default_download_path":default_download_path,
+            "download_quality":download_quality,
+            "default_media_type":default_media_type,
+            "always_overwrite_similar_files":always_overwrite_similar_files
+        }
+        
+        with open('settings.json', 'w') as file:
+            json.dump(data, file, indent=4)
+        start_download()
+    make_download_request(song, default_download_path, download_quality, default_media_type, always_overwrite_similar_files)
     start_download()
 
 start_download()

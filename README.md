@@ -1,9 +1,15 @@
-# **Viper Song Downloader**
-#### **by Áà Män シ**
+# **Viper Music Downloader**
+#### **v1.0.1**
+
+## **What's New?**
+
+- **ANSI Escape Codes:** New ANSI Escape Codes for a prettier and more decorative console print.
+- **Inline Commands:** Support for editing settings through inline commands, similar to `/exit`. Command menu available on load.
+- **Bugs:** Minor bug fixes.
 
 ## **Introduction**
 
-_Viper Song Downloader_ is a simple but robust Python application that takes a search parameter from input and download it to your local storage. The search parameter can be a query or YouTube video URL. You can specify the default media type, download path and quality in [settings.json](./settings.json).
+_Viper Music Downloader_ is a simple but robust Python application that takes a search parameter from input and downloads it to your local storage. The search parameter can be a query or YouTube video URL. You can specify the default media type, download path, quality and other settings in [settings.json](./settings.json).
 
 ## **Requirements**
 
